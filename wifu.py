@@ -193,7 +193,7 @@ def display_table(rows, f=sys.stdout):
     for (i, row) in enumerate(rows):
         assert len(collens) == len(row), `collens, row`
 
-        f.write('% 2d)' % (i,))
+        f.write('% 3d)' % (i,))
 
         for (collen, cell) in zip(collens, row):
             padlen = collen - len(cell)
