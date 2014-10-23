@@ -211,6 +211,8 @@ def associate_to_access_point(iface, entry):
             'essid', entry.essid,
             'channel', entry.channel)
 
+        run('sudo', 'dhclient', iface)
+
 
 if __name__ == '__main__':
     main()
