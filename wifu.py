@@ -159,6 +159,10 @@ class ScanEntry (object):
                 return False
         return True
 
+    @property
+    def encrypted(self):
+        return self.encryption == 'on'
+
     def __repr__(self):
         return '<ScanEntry {!r}>'.format(self._fields)
 
@@ -173,7 +177,9 @@ class ScanEntry (object):
             ]
 
     def __getattr__(self, name):
-        return self._fields[name]
+        v = self._fields[name]
+        assert v is not None, 'Attribute not yet set: %r' % (name,)
+        return v
 
     def set_field(self, name, value):
         assert name in self._fields and self._fields[name] is None, \
@@ -197,7 +203,7 @@ def display_table(rows, f=sys.stdout):
 
 
 def associate_to_access_point(iface, entry):
-    if entry.encryption:
+    if entry.encrypted:
         raise NotImplementedError('encrypted wifi for %r' % (entry,))
     else:
         run('sudo',
