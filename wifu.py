@@ -14,7 +14,7 @@ Scan and bring up a wifi interface.
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
     result = check_output('sudo', 'iwlist', opts.interface, 'scan')
-    logging.debug('scan result: %r', result
+    logging.debug('scan result: %r', result)
 
 
 def parse_args(args):
