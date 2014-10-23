@@ -16,9 +16,8 @@ Scan and bring up a wifi interface.
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
     run('sudo', 'ifconfig', opts.interface, 'up')
-    entries = scan(opts.interface)
-    for entry in entries:
-        print entry
+    entry = scan_and_select_entry(opts.interface)
+    associate_to_access_point(opts.interface, entry)
 
 
 def parse_args(args):
@@ -28,7 +27,7 @@ def parse_args(args):
 
     p.add_argument('--log-level',
                    dest='loglevel',
-                   default='DEBUG', #'INFO',
+                   default='INFO',
                    choices=['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'],
                    help='Set logging level.')
 
@@ -66,6 +65,32 @@ def run(log, *args, **kw):
 def gather_output(log, *args, **kw):
     log.info('Running: %r %r', args, kw)
     return subprocess.check_output(args, **kw)
+
+
+def scan_and_select_entry(iface)
+    while True:
+        entries = scan(iface)
+
+        print '\nEntries:\n q) quit\n r) rescan\n'
+        display_table( [e.as_display_list() for e in entries] )
+
+        command = raw_input('? ')
+        if command == 'r':
+            continue
+        elif command == 'q':
+            raise SystemExit('Bye!')
+        else:
+            try:
+                ix = int(command)
+                entry = entries[ix]
+            except ValueError:
+                print 'I did not understand %r; rescanning...' % (command,)
+                continue
+            except IndexError:
+                print 'Not a valid selection %r; rescanning...' % (command,)
+                continue
+            else:
+                return entry
 
 
 @with_log
@@ -134,10 +159,18 @@ class ScanEntry (object):
                 return False
         return True
 
-    def __str__(self):
-        return ('{address} ch:{channel} '
-                'enc:{encryption} Q:{quality} sig:{siglevel} {essid!r}'
-            ).format(**self._fields)
+    def __repr__(self):
+        return '<ScanEntry {!r}>'.format(self._fields)
+
+    def as_display_list(self):
+        return [
+            self.address,
+            repr(self.essid),
+            self.channel,
+            self.encryption,
+            self.quality,
+            self.siglevel,
+            ]
 
     def __getattr__(self, name):
         return self._fields[name]
@@ -146,6 +179,31 @@ class ScanEntry (object):
         assert name in self._fields and self._fields[name] is None, \
             `name, value, self._fields`
         self._fields[name] = value
+
+
+def display_table(rows, f=sys.stdout):
+    collens = [ max( [len(x) for x in col] ) for col in zip(*rows) ]
+
+    for (i, row) in enumerate(rows):
+        assert len(collens) == len(row), `collens, row`
+
+        f.write('% 2d)' % (i,))
+
+        for (collen, cell) in zip(collens, row):
+            padlen = collen - len(cell)
+            f.write(' %s%s' % (' ' * padlen, cell))
+
+        f.write('\n')
+
+
+def associate_to_access_point(iface, entry):
+    if entry.encryption:
+        raise NotImplementedError('encrypted wifi for %r' % (entry,))
+    else:
+        run('sudo',
+            'iwconfig', iface,
+            'essid', entry.essid,
+            'channel', entry.channel)
 
 
 if __name__ == '__main__':
