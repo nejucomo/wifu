@@ -67,7 +67,7 @@ def gather_output(log, *args, **kw):
     return subprocess.check_output(args, **kw)
 
 
-def scan_and_select_entry(iface)
+def scan_and_select_entry(iface):
     while True:
         entries = scan(iface)
 
