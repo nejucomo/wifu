@@ -15,7 +15,7 @@ Scan and bring up a wifi interface.
 
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
-    run('sudo', 'ifconfig', opts.interface, 'up')
+    run('ifconfig', opts.interface, 'up')
     entry = scan_and_select_entry(opts.interface)
     associate_to_access_point(opts.interface, entry)
 
@@ -96,7 +96,7 @@ def scan_and_select_entry(iface):
 @with_log
 def scan(log, iface):
     return parse_scan_output(
-        gather_output('sudo', 'iwlist', iface, 'scan'))
+        gather_output('iwlist', iface, 'scan'))
 
 
 @with_log
@@ -206,12 +206,11 @@ def associate_to_access_point(iface, entry):
     if entry.encrypted:
         raise NotImplementedError('encrypted wifi for %r' % (entry,))
     else:
-        run('sudo',
-            'iwconfig', iface,
+        run('iwconfig', iface,
             'essid', entry.essid,
             'channel', entry.channel)
 
-        run('sudo', 'dhclient', iface)
+        run('dhclient', iface)
 
 
 if __name__ == '__main__':
