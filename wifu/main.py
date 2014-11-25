@@ -16,8 +16,12 @@ Scan and bring up a wifi interface.
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
     run('ifconfig', opts.interface, 'up')
+
     entry = scan_and_select_entry(opts.interface)
-    associate_to_access_point(opts.interface, entry)
+    dhcproc = associate_to_access_point(opts.interface, entry)
+
+    wait_for_dhclient(dhcproc)
+    run('ifconfig', opts.interface, 'down')
 
 
 def parse_args(args):
@@ -210,7 +214,18 @@ def associate_to_access_point(iface, entry):
             'essid', entry.essid,
             'channel', entry.channel)
 
-        run('dhclient', iface)
+        return subprocess.Popen(args=['dhclient', '-d', iface], shell=False)
+
+
+@with_log
+def wait_for_dhclient(log, dhcproc):
+    try:
+        status = dhcproc.wait()
+    except KeyboardInterrupt:
+        print
+        log.info('Ctrl-C')
+    else:
+        log.info('dhclient exited with status %r = 0x%04x', status, status)
 
 
 if __name__ == '__main__':
