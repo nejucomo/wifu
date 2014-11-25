@@ -71,7 +71,7 @@ def scan_and_select_entry(iface):
     while True:
         entries = scan(iface)
 
-        print '\nEntries:\n q) quit\n r) rescan\n'
+        print '\nEntries:\n  q) quit\n  r) rescan\n'
         display_table( [e.as_display_list() for e in entries] )
 
         command = raw_input('? ')
