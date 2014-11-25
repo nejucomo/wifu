@@ -16,13 +16,11 @@ Scan and bring up a wifi interface.
 
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
-    run('ifconfig', opts.interface, 'up')
 
-    entry = scan_and_select_entry(opts.interface)
-    dhcproc = associate_to_access_point(opts.interface, entry)
-
-    wait_for_dhclient(dhcproc)
-    run('ifconfig', opts.interface, 'down')
+    with InterfaceLifetime(opts.interface):
+        entry = scan_and_select_entry(opts.interface)
+        dhcproc = associate_to_access_point(opts.interface, entry)
+        wait_for_dhclient(dhcproc)
 
 
 def parse_args(args):
@@ -241,6 +239,18 @@ def describe_process_status(status):
     else:
         raise AssertionError('Unknown status format: {!r}'.format(status))
 
+
+class InterfaceLifetime (object):
+    def __init__(self, iface):
+        self._iface = iface
+
+    def __enter__(self):
+        run('ifconfig', self._iface, 'up')
+        return None
+
+    def __exit__(self, etype, ev, etb):
+        run('ifconfig', self._iface, 'down')
+        return False
 
 
 if __name__ == '__main__':
