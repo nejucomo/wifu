@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import sys
 import argparse
 import logging
@@ -225,7 +226,21 @@ def wait_for_dhclient(log, dhcproc):
         print
         log.info('Ctrl-C')
     else:
-        log.info('dhclient exited with status %r = 0x%04x', status, status)
+        log.info('dhclient exited (%x, %x): %s', status, 2**15 + status, describe_process_status(status))
+
+
+def describe_process_status(status):
+    if os.WIFEXITED(status):
+        return 'exited with status {!r}'.format(os.WEXITSTATUS(status))
+    elif os.WIFSIGNALED(status):
+        return 'terminated by signal {!r}'.format(os.WTERMSIG(status))
+    elif os.WIFSTOPPED(status):
+        return 'stopped with signal {!r}'.format(os.WSTOPSIG(status))
+    elif os.WIFCONTINUED(status):
+        return 'continued'
+    else:
+        raise AssertionError('Unknown status format: {!r}'.format(status))
+
 
 
 if __name__ == '__main__':
