@@ -13,6 +13,10 @@ DESCRIPTION = """
 Scan and bring up a wifi interface.
 """
 
+VT100_MAGENTA = b'\x1b[35m'
+VT100_CYAN = b'\x1b[36m'
+VT100_RESET = b'\x1b[0m'
+
 
 def main(args = sys.argv[1:]):
     opts = parse_args(args)
@@ -196,12 +200,14 @@ def display_table(rows, f=sys.stdout):
     for (i, row) in enumerate(rows):
         assert len(collens) == len(row), `collens, row`
 
+        f.write( VT100_CYAN if i % 6 > 2 else VT100_MAGENTA )
         f.write('% 3d)' % (i,))
 
         for (collen, cell) in zip(collens, row):
             padlen = collen - len(cell)
             f.write(' %s%s' % (' ' * padlen, cell))
 
+        f.write(VT100_RESET)
         f.write('\n')
 
 
