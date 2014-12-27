@@ -75,14 +75,16 @@ def gather_output(log, *args, **kw):
 
 
 def scan_and_select_entry(iface):
-    while True:
-        entries = scan(iface)
+    entries = scan(iface)
 
+    while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
         display_table( [e.as_display_list() for e in entries] )
 
         command = raw_input('? ')
         if command == 'r':
+            print 'Rescanning...'
+            entries = scan(iface)
             continue
         elif command == 'q':
             raise SystemExit('Bye!')
@@ -91,10 +93,10 @@ def scan_and_select_entry(iface):
                 ix = int(command)
                 entry = entries[ix]
             except ValueError:
-                print 'I did not understand %r; rescanning...' % (command,)
+                print 'I did not understand %r' % (command,)
                 continue
             except IndexError:
-                print 'Not a valid selection %r; rescanning...' % (command,)
+                print 'Not a valid selection %r' % (command,)
                 continue
             else:
                 return entry
