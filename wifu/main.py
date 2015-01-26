@@ -27,7 +27,16 @@ def main(args = sys.argv[1:]):
         wait_for_dhclient(dhcproc)
 
 
-def parse_args(args):
+def with_log(f):
+    log = logging.getLogger(f.__name__)
+    @wraps(f)
+    def g(*a, **kw):
+        return f(log, *a, **kw)
+    return g
+
+
+@with_log
+def parse_args(log, args):
     p = argparse.ArgumentParser(
         description=DESCRIPTION,
         formatter_class=argparse.RawTextHelpFormatter)
@@ -45,7 +54,7 @@ def parse_args(args):
 
     p.add_argument('--all',
                    dest='all',
-                   default='false',
+                   default=False,
                    action='store_true',
                    help='Show all APs, even those requiring encryption.')
 
@@ -57,15 +66,8 @@ def parse_args(args):
         datefmt='%Y-%m-%dT%H:%M:%S%z',
         level=getattr(logging, opts.loglevel))
 
+    log.debug('Options: %r', opts)
     return opts
-
-
-def with_log(f):
-    log = logging.getLogger(f.__name__)
-    @wraps(f)
-    def g(*a, **kw):
-        return f(log, *a, **kw)
-    return g
 
 
 @with_log
@@ -84,7 +86,7 @@ def scan_and_select_entry(iface, all):
     entries = scan(iface)
 
     if not all:
-        entries = filter_entries(entries)
+        entries = filter_out_encrypted_entries(entries)
 
     while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
@@ -222,8 +224,10 @@ def display_table(rows, f=sys.stdout):
         f.write('\n')
 
 
-def filter_entries(entries):
+@with_log
+def filter_out_encrypted_entries(log, entries):
     for entry in entries:
+        log.debug('Considering %r to filter; encrypted %r...', entry, entry.encrypted)
         if not entry.encrypted:
             yield entry
 
