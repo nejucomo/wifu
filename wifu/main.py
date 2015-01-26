@@ -22,7 +22,7 @@ def main(args = sys.argv[1:]):
     opts = parse_args(args)
 
     with InterfaceLifetime(opts.interface):
-        entry = scan_and_select_entry(opts.interface)
+        entry = scan_and_select_entry(opts.interface, opts.all)
         dhcproc = associate_to_access_point(opts.interface, entry)
         wait_for_dhclient(dhcproc)
 
@@ -42,6 +42,12 @@ def parse_args(args):
                    dest='interface',
                    default='wlan0',
                    help='Wifi interface.')
+
+    p.add_argument('--all',
+                   dest='all',
+                   default='false',
+                   action='store_true',
+                   help='Show all APs, even those requiring encryption.')
 
     opts = p.parse_args(args)
 
@@ -74,8 +80,11 @@ def gather_output(log, *args, **kw):
     return subprocess.check_output(args, **kw)
 
 
-def scan_and_select_entry(iface):
+def scan_and_select_entry(iface, all):
     entries = scan(iface)
+
+    if not all:
+        entries = filter_entries(entries)
 
     while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
@@ -211,6 +220,12 @@ def display_table(rows, f=sys.stdout):
 
         f.write(VT100_RESET)
         f.write('\n')
+
+
+def filter_entries(entries):
+    for entry in entries:
+        if not entry.encrypted:
+            yield entry
 
 
 def associate_to_access_point(iface, entry):
