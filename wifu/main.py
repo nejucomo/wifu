@@ -237,6 +237,7 @@ def associate_to_access_point(iface, entry):
         raise NotImplementedError('encrypted wifi for %r' % (entry,))
     else:
         run('iwconfig', iface,
+            'ap', entry.address,
             'essid', entry.essid,
             'channel', entry.channel)
 
