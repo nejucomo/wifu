@@ -86,7 +86,7 @@ def scan_and_select_entry(iface, all):
     entries = scan(iface)
 
     if not all:
-        entries = filter_out_encrypted_entries(entries)
+        entries = list(filter_out_encrypted_entries(entries))
 
     while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
