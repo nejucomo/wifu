@@ -83,10 +83,12 @@ def gather_output(log, *args, **kw):
 
 
 def scan_and_select_entry(iface, all):
-    entries = scan(iface)
+    if all:
+        do_scan = scan
+    else:
+        do_scan = lambda iface: list(filter_out_encrypted_entries(scan(iface)))
 
-    if not all:
-        entries = list(filter_out_encrypted_entries(entries))
+    entries = do_scan(iface)
 
     while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
@@ -95,7 +97,7 @@ def scan_and_select_entry(iface, all):
         command = raw_input('? ')
         if command == 'r':
             print 'Rescanning...'
-            entries = scan(iface)
+            entries = do_scan(iface)
             continue
         elif command == 'q':
             raise SystemExit('Bye!')
