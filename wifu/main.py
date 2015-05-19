@@ -204,7 +204,7 @@ class ScanEntry (object):
         return v
 
     def get_field(self, name, default=None):
-        return self.fields.get(name, default)
+        return self._fields.get(name, default)
 
     def set_field(self, name, value):
         assert name in self._fields and self._fields[name] is None, \
