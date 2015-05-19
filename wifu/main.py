@@ -145,7 +145,7 @@ def parse_scan_output(log, output):
                 entry.set_field(key, value)
                 log.debug('Set %r: %s', key, entry)
 
-    entries.sort(key = lambda e: e.essid)
+    entries.sort(key = lambda e: e.get_field('essid'))
 
     return entries
 
@@ -202,6 +202,9 @@ class ScanEntry (object):
         v = self._fields[name]
         assert v is not None, 'Attribute not yet set: %r' % (name,)
         return v
+
+    def get_field(self, name, default=None):
+        return self.fields.get(name, default)
 
     def set_field(self, name, value):
         assert name in self._fields and self._fields[name] is None, \
