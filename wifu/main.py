@@ -134,8 +134,6 @@ def parse_scan_output(log, output):
             continue
 
         if m.group('address') is not None:
-            if entries and not entries[-1].finalized:
-                log.warn('Skipping non-finalized entry: %r', entries.pop())
             entries.append(ScanEntry())
             log.debug('New entry.')
 
@@ -146,9 +144,16 @@ def parse_scan_output(log, output):
                 entry.set_field(key, value)
                 log.debug('Set %r: %s', key, entry)
 
-    entries.sort(key = lambda e: e.get_field('essid'))
+    filtered = []
+    for e in entries:
+        if e.finalized:
+            filtered.append(e)
+        else:
+            log.warn('Malformed (unfinalized) entry: %r', e)
 
-    return entries
+    filtered.sort(key=lambda e: e.get_field('essid'))
+
+    return filtered
 
 parse_scan_output._EntryRgx = re.compile(
     r'''
