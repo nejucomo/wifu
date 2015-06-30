@@ -209,7 +209,7 @@ class ScanEntry (object):
 
     def set_field(self, name, value):
         assert name in self._fields and self._fields[name] is None, \
-            repr((name, value, self._fields))
+            reprvargs(name, value, self._fields)
         self._fields[name] = value
 
 
@@ -217,7 +217,7 @@ def display_table(rows, f=sys.stdout):
     collens = [max([len(x) for x in col]) for col in zip(*rows)]
 
     for (i, row) in enumerate(rows):
-        assert len(collens) == len(row), repr((collens, row))
+        assert len(collens) == len(row), reprvargs(collens, row)
 
         f.write(VT100_CYAN if i % 6 > 2 else VT100_MAGENTA)
         f.write('% 3d)' % (i,))
@@ -292,6 +292,10 @@ class InterfaceLifetime (object):
     def __exit__(self, etype, ev, etb):
         run('ifconfig', self._iface, 'down')
         return False
+
+
+def reprvargs(*args):
+    return repr(args)
 
 
 if __name__ == '__main__':
