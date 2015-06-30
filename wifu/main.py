@@ -133,8 +133,8 @@ def parse_scan_output(log, output):
             continue
 
         if m.group('address') is not None:
-            if entries:
-                assert entries[-1].finalized, str(entries[-1])
+            if entries and not entries[-1].finalized:
+                log.warn('Skipping non-finalized entry: %r', entries.pop())
             entries.append(ScanEntry())
             log.debug('New entry.')
 
