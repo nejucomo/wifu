@@ -18,7 +18,7 @@ VT100_CYAN = b'\x1b[36m'
 VT100_RESET = b'\x1b[0m'
 
 
-def main(args = sys.argv[1:]):
+def main(args=sys.argv[1:]):
     opts = parse_args(args)
 
     with InterfaceLifetime(opts.interface):
@@ -29,6 +29,7 @@ def main(args = sys.argv[1:]):
 
 def with_log(f):
     log = logging.getLogger(f.__name__)
+
     @wraps(f)
     def g(*a, **kw):
         return f(log, *a, **kw)
@@ -92,7 +93,7 @@ def scan_and_select_entry(iface, all):
 
     while True:
         print '\nEntries:\n  q) quit\n  r) rescan\n'
-        display_table( [e.as_display_list() for e in entries] )
+        display_table([e.as_display_list() for e in entries])
 
         command = raw_input('? ')
         if command == 'r':
@@ -172,7 +173,7 @@ parse_scan_output._EntryRgx = re.compile(
 class ScanEntry (object):
     def __init__(self):
         keys = 'address essid channel encryption quality siglevel'.split()
-        self._fields = dict( (k, None) for k in keys)
+        self._fields = dict((k, None) for k in keys)
 
     @property
     def finalized(self):
@@ -208,17 +209,17 @@ class ScanEntry (object):
 
     def set_field(self, name, value):
         assert name in self._fields and self._fields[name] is None, \
-            `name, value, self._fields`
+            repr((name, value, self._fields))
         self._fields[name] = value
 
 
 def display_table(rows, f=sys.stdout):
-    collens = [ max( [len(x) for x in col] ) for col in zip(*rows) ]
+    collens = [max([len(x) for x in col]) for col in zip(*rows)]
 
     for (i, row) in enumerate(rows):
-        assert len(collens) == len(row), `collens, row`
+        assert len(collens) == len(row), repr((collens, row))
 
-        f.write( VT100_CYAN if i % 6 > 2 else VT100_MAGENTA )
+        f.write(VT100_CYAN if i % 6 > 2 else VT100_MAGENTA)
         f.write('% 3d)' % (i,))
 
         for (collen, cell) in zip(collens, row):
@@ -232,7 +233,10 @@ def display_table(rows, f=sys.stdout):
 @with_log
 def filter_out_encrypted_entries(log, entries):
     for entry in entries:
-        log.debug('Considering %r to filter; encrypted %r...', entry, entry.encrypted)
+        log.debug(
+            'Considering %r to filter; encrypted %r...',
+            entry,
+            entry.encrypted)
         if not entry.encrypted:
             yield entry
 
@@ -257,7 +261,11 @@ def wait_for_dhclient(log, dhcproc):
         print
         log.info('Ctrl-C')
     else:
-        log.info('dhclient exited (%x, %x): %s', status, 2**15 + status, describe_process_status(status))
+        log.info(
+            'dhclient exited (%x, %x): %s',
+            status,
+            2**15 + status,
+            describe_process_status(status))
 
 
 def describe_process_status(status):
