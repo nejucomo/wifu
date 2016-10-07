@@ -87,7 +87,7 @@ def scan_and_select_entry(iface, all):
     if all:
         do_scan = scan
     else:
-        do_scan = lambda iface: list(filter_out_encrypted_entries(scan(iface)))
+        do_scan = scan_filtered
 
     entries = do_scan(iface)
 
@@ -120,6 +120,10 @@ def scan_and_select_entry(iface, all):
 def scan(log, iface):
     return parse_scan_output(
         gather_output('iwlist', iface, 'scan'))
+
+
+def scan_filtered(iface):
+    return list(filter_out_encrypted_entries(scan(iface)))
 
 
 @with_log

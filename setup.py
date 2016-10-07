@@ -11,11 +11,11 @@ setup(
     license='GPLv3',
     url='https://github.com/nejucomo/wifu',
     packages=find_packages(),
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'wifu = wifu.main:main',
         ],
     },
-    install_requires = [
+    install_requires=[
     ],
 )
