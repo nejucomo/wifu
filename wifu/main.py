@@ -50,7 +50,7 @@ def parse_args(log, args):
 
     p.add_argument('--interface', '-i',
                    dest='interface',
-                   default='wlan0',
+                   default='wlp4s0',
                    help='Wifi interface.')
 
     p.add_argument('--all',
