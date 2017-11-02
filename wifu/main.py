@@ -158,8 +158,13 @@ def parse_scan_output(log, output):
         else:
             log.warn('Malformed (unfinalized) entry: %r', e)
 
-    filtered.sort(key=lambda e: e.get_field('essid'))
+    def sort_key(e):
+        return (
+            e.get_field('essid'),
+            -int(e.get_field('quality').split('/')[0]),
+        )
 
+    filtered.sort(key=sort_key)
     return filtered
 
 parse_scan_output._EntryRgx = re.compile(
@@ -227,8 +232,8 @@ class ScanEntry (object):
                 name, value, self._fields[name]
             )
         else:
-            assert name in self._fields, reprvargs(name, value, self._fields)
-            assert self._fields[name] is None, reprvargs(name, value, self._fields)
+            assert name in self._fields, (name, value, self._fields)
+            assert self._fields[name] is None, (name, value, self._fields)
             self._fields[name] = value
 
 
@@ -236,7 +241,7 @@ def display_table(rows, f=sys.stdout):
     collens = [max([len(x) for x in col]) for col in zip(*rows)]
 
     for (i, row) in enumerate(rows):
-        assert len(collens) == len(row), reprvargs(collens, row)
+        assert len(collens) == len(row), (collens, row)
 
         f.write(VT100_CYAN if i % 6 > 2 else VT100_MAGENTA)
         f.write('% 3d)' % (i,))
@@ -311,10 +316,6 @@ class InterfaceLifetime (object):
     def __exit__(self, etype, ev, etb):
         run('ifconfig', self._iface, 'down')
         return False
-
-
-def reprvargs(*args):
-    return repr(args)
 
 
 if __name__ == '__main__':
