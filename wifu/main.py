@@ -145,8 +145,11 @@ def parse_scan_output(log, output):
 
         for (key, value) in m.groupdict().iteritems():
             if value is not None:
-                entry.set_field(key, value)
-                log.debug('Set %r: %s', key, entry)
+                if key == 'essid' and value == '':
+                    log.warn('Strange empty ESSID for %r', entry)
+                else:
+                    entry.set_field(key, value)
+                    log.debug('Set %r: %s', key, entry)
 
     filtered = []
     for e in entries:
@@ -217,9 +220,16 @@ class ScanEntry (object):
         return self._fields.get(name, default)
 
     def set_field(self, name, value):
-        assert name in self._fields and self._fields[name] is None, \
-            reprvargs(name, value, self._fields)
-        self._fields[name] = value
+        if name not in self._fields:
+            print 'WARNING: Unknown field: {!r} = {!r}'.format(name, value)
+        elif self._fields[name] is not None:
+            print 'WARNING: Multiple field defs: {!r} = {!r} vs {!r}'.format(
+                name, value, self._fields[name]
+            )
+        else:
+            assert name in self._fields, reprvargs(name, value, self._fields)
+            assert self._fields[name] is None, reprvargs(name, value, self._fields)
+            self._fields[name] = value
 
 
 def display_table(rows, f=sys.stdout):
